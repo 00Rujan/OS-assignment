@@ -1,4 +1,4 @@
-##Question: 
+#Question: 
 What are the functions and system calls commonly used in Unix-like operating systems for process management and file handling, and how do they work? Explain in detail.
 
 1. fork()
@@ -6,7 +6,7 @@ Description:
 The fork() system call is used to create a new process in Unix-like operating systems. This new process, called the child process, is a duplicate of the calling process, known as the parent process. After a fork() call, both processes continue executing from the point where the fork() call was made. The primary difference between the two processes is their process ID (PID).
 
 Key Points:
---Concurrent Execution: Both parent and child processes run concurrently.
+-Concurrent Execution: Both parent and child processes run concurrently.
 --Unique PIDs: The child process receives a unique PID different from the parent.
 --Memory Space: Initially, the child process has a copy of the parent’s memory space, though modern systems use techniques like copy-on-write to optimize memory usage.
 --Resource Sharing: File descriptors, environment variables, and other resources are shared, but changes in one process do not affect the other after the fork.
