@@ -1,0 +1,141 @@
+##Question: 
+What are the functions and system calls commonly used in Unix-like operating systems for process management and file handling, and how do they work? Explain in detail.
+
+1. fork()
+Description:
+The fork() system call is used to create a new process in Unix-like operating systems. This new process, called the child process, is a duplicate of the calling process, known as the parent process. After a fork() call, both processes continue executing from the point where the fork() call was made. The primary difference between the two processes is their process ID (PID).
+
+Key Points:
+--Concurrent Execution: Both parent and child processes run concurrently.
+--Unique PIDs: The child process receives a unique PID different from the parent.
+--Memory Space: Initially, the child process has a copy of the parent’s memory space, though modern systems use techniques like copy-on-write to optimize memory usage.
+--Resource Sharing: File descriptors, environment variables, and other resources are shared, but changes in one process do not affect the other after the fork.
+
+2. exec()
+Description:
+The exec() family of functions replaces the current process image with a new process image. This means that the program specified in the exec() call will run in place of the current process, effectively transforming it into a new process.
+
+Key Points:
+--Process Replacement: The current process is completely replaced, including its code, data, and stack.
+--No Return: If exec() is successful, it does not return to the original program. If it fails, the current process continues to run.
+--Environment Variables: The new process can inherit the environment of the old process or receive a new set of environment variables.
+
+3. getpid()
+Description:
+The getpid() function returns the PID of the calling process. It is often used for process management and coordination.
+
+Key Points:
+--Unique Identifier: PIDs are unique identifiers for running processes.
+--Process Management: Parents can use getpid() to get their own PID or that of their child processes for management purposes.
+
+4. wait()
+Description:
+The wait() function is used by a parent process to wait for state changes in its child processes. Typically, it pauses execution until one of its child processes terminates.
+
+Key Points:
+--Process Synchronization: Helps the parent process synchronize with its child processes.
+--Resource Management: Ensures that resources used by terminated child processes are properly released.
+--Blocking Call: The parent process is blocked until a child process exits or a signal is received.
+
+5. stat()
+Description:
+The stat() function retrieves detailed information about a file or directory. This includes metadata such as file size, permissions, owner, and timestamps.
+
+Key Points:
+--File Attributes: Provides comprehensive details about files and directories.
+--Filesystem Interaction: Commonly used in file management and system utilities to gather file-related information.
+--Data Structure: Information is stored in a structure with fields representing different attributes.
+
+6. opendir()
+Description:
+The opendir() function opens a directory stream, allowing subsequent access to the directory's contents.
+
+Key Points:
+--Directory Stream: Represents a handle to iterate over directory entries.
+--Reading Directories: Often used with readdir() to read the contents of a directory.
+--Resource Management: The directory stream should be closed with closedir() after being used to free resources.
+
+7. readdir()
+Description:
+The readdir() function reads the next entry from an open directory stream. It allows iteration through the directory’s contents, providing details about each entry.
+
+Key Points:
+--Directory Traversal: Facilitates reading each entry within a directory one at a time.
+--File Information: Provides information about files and subdirectories within the directory.
+--End of Directory: Returns NULL when the end of the directory stream is reached.
+
+8. close()
+Description:
+The close() function closes an open file descriptor, releasing the associated resources and marking it as no longer in use.
+
+Key Points:
+--Resource Management: Essential for managing system resources and preventing leaks.
+--File Descriptors: Used to identify open files, sockets, and other I/O resources.
+--Final Step: Typically the final operation is performed on an open file or resource.
+
+
+Source Code:
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Initialize a mutex to 1
+int mutex = 1;
+
+// Number of full slots as 0
+int full = 0;
+
+// Number of empty slots as size of buffer
+int empty = 10, x = 0;
+
+// Function to produce an item and add it to the buffer
+void producer() {
+    --mutex;  // Decrease mutex by 1
+    ++full;   // Increase number of full slots by 1
+    --empty;  // Decrease empty slots
+    x++;
+    printf("\nProducer produces item %d", x);
+    ++mutex;
+}
+
+// Function to consume an item and remove it from the buffer
+void consumer() {
+    --mutex;
+    --full;
+    ++empty;
+    printf("\nConsumer consumes item %d", x);
+    x--;
+    ++mutex;
+}
+
+int main() {
+    int n;
+    printf("\n1. Press 1 for Producer");
+    printf("\n2. Press 2 for Consumer");
+    printf("\n3. Press 3 for Exit");
+
+    while (1) {
+        printf("\nEnter your choice: ");
+        scanf("%d", &n);
+        // Switch cases
+        switch (n) {
+            case 1:
+                if ((mutex == 1) && (empty != 0)) {
+                    producer();
+                } else {
+                    printf("Buffer is full");
+                }
+                break;
+            case 2:
+                if ((mutex == 1) && (full != 0)) {
+                    consumer();
+                } else {
+                    printf("Buffer is empty!");
+                }
+                break;
+            case 3:
+                exit(0);
+        }
+    }
+    return 0;
+}
